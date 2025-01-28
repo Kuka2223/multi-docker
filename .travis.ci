@@ -1,0 +1,21 @@
+sudo: required
+services:
+  - docker
+
+before_install: 
+  - docker build -t Kuka2223/react-test ./client/Dockerfile.dev .
+
+script: 
+- docker run Kuka2223/react-test npm test -- --coverage
+
+after_success: 
+  - docker build -t Kuka2223/multi-client ./client
+  - docker build -t Kuka2223/multi-nginx ./nginx 
+  - docker build -t Kuka2223/multi-server ./server 
+  - docker build -t Kuka2223/multi-worker ./worker
+  - echo "$DOCKER_PASSWOWD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push
+  - docker push Kuka2223/multi-client
+  - docker push Kuka2223/multi-nginx
+  - docker push Kuka2223/multi-server
+  - docker push Kuka2223/multi-worker
